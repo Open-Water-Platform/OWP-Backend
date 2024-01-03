@@ -1,0 +1,43 @@
+version: "3.7"
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    container_name: owmp-mqtt-broker
+    restart: always
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mqtt-broker/config:/mosquitto/config:rw
+      - ./mqtt-broker/data:/mosquitto/data:rw
+      - ./mqtt-broker/log:/mosquitto/log:rw
+
+  api-server:
+    build: ./server
+    container_name: owmp-api-server
+    restart: always
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mqtt-broker
+    environment:
+      - PORT=4000
+      - MQTT_HOST=mqtt-broker
+      - MQTT_PORT=1883
+      - MQTT_PROTOCOL=mqtt
+      - MQTT_USERNAME=
+      - MQTT_PASSWORD=
+      - EMAIL_SMTP_HOST=
+      - EMAIL_SMTP_PORT=
+      - NODEMAILER_USER=
+      - NODEMAILER_PASS=
+      - API_KEY_SECRET=
+      - DYNAMODB_TABLE_REGULAR = 
+      - DYNAMODB_TABLE_FAULTY_DEVICES=
+      - DYNAMODB_TABLE_CHLORINE=
+      - AWS_ACCESS_KEY=
+      - AWS_SECRET_KEY=
+
+volumes:
+  config:
+  data:
+  log:
