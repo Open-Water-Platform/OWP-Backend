@@ -7,7 +7,7 @@ const {
   getUserDevices,
 } = require("../utils/utils");
 
-const mainDB = 'OWMP';
+const mainDB = 'owmp';
 
 async function getDeviceData(req, res) {
   try {

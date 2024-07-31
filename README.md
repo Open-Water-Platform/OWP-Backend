@@ -49,7 +49,7 @@
 4. **Setup docker :**
     ```bash
     docker-compose up -d
-    docker exec -it saafwater-mqtt-broker mosquitto_passwd -b /mosquitto/config/mosquitto.passwd <username> <password>
+    docker exec -it owmp-mqtt-broker mosquitto_passwd -b /mosquitto/config/mosquitto.passwd <username> <password>
     docker-compose restart
     ```
 
