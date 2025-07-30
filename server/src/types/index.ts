@@ -28,14 +28,11 @@ export interface DeviceData {
 // Simplified MQTT and Hardware Controller types
 export interface Data {
   deviceId?: string;
-  deviceid?: string | number;
   timestamp?: number;
   chlorine?: number;
   tds?: number;
   tss?: number;
-  conductivity?: number;
   temperature?: number;
-  [key: string]: string | number | undefined;
 }
 
 export interface ProcessedData {

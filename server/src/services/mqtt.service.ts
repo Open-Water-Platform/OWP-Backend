@@ -1,7 +1,6 @@
 import mqtt, { MqttClient as MqttClientType, IClientOptions, QoS } from 'mqtt';
 import { 
-  handleHardwareUpdate, 
-  handleHardwareMeta
+  handleHardwareUpdate
 } from '../controllers/hardware.controller';
 import { MqttClient } from '../types';
 
@@ -64,8 +63,7 @@ class MqttService {
     if (!this.client) return;
 
     const topics = [
-      'devices/data/+/+',      // Regular device data
-      'devices/meta/+',        // Regular device meta
+      'devices/set/+',          // Device data
     ];
 
     topics.forEach(topic => {
@@ -86,10 +84,8 @@ class MqttService {
     
     try {
       // Route messages based on topic pattern
-      if (topic.match(/^devices\/data\/.+/)) {
+      if (topic.match(/^devices\/set\/.+/)) {
         handleHardwareUpdate(topic, message, this.client as MqttClient, this.expressWs);
-      } else if (topic.match(/^devices\/meta\/.+/)) {
-        handleHardwareMeta(topic, message, this.client as MqttClient, this.expressWs);
       } else {
         console.log(`Unhandled topic: ${topic}`);
       }

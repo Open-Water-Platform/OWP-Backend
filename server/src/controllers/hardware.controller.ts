@@ -8,7 +8,7 @@ import {
 const owpDB: string = process.env.OWP_DB || 'owmp';
 
 function displayData(data: Data): void {
-  const deviceIdentifier = data.deviceId || data.deviceid;
+  const deviceIdentifier = data.deviceId;
   console.log(
     "\nData received from Device:" +
     deviceIdentifier +
@@ -41,14 +41,11 @@ async function handleHardwareUpdate(topic: string, message: string, client: Mqtt
 
 async function handleRegularDevice(data: Data, client: MqttClient): Promise<void> {
   try {
-    const deviceId = Number(data.deviceid);
+    const deviceId = Number(data.deviceId);
     const timestamp = data.timestamp || new Date().getTime();
 
     // Calculate TDS from conductivity if available
     let tds = data.tds || 0;
-    if (data.conductivity) {
-      tds = data.conductivity * 0.5; // Simple conversion
-    }
 
     // Extract chlorine, TDS, and TSS from the data
     const processedData: ProcessedData = {
@@ -98,42 +95,6 @@ async function handleRegularDevice(data: Data, client: MqttClient): Promise<void
   }
 }
 
-async function handleHardwareMeta(topic: string, message: string, client: MqttClient, expressWs: any): Promise<void> {
-  try {
-    const data: Data = JSON.parse(message);
-    console.log(
-      "\nMeta message received from Device:" +
-      data.deviceId +
-      " @ " +
-      new Date().toLocaleDateString("en-US", {
-        timeZone: "Asia/Kolkata",
-      }) +
-      " " +
-      new Date().toLocaleTimeString("en-US", {
-        timeZone: "Asia/Kolkata",
-      })
-    );
-    console.log("\n", data);
-    console.log("Sending response to device " + data.deviceId);
-    client.publish(
-      "devices/meta/response/" + data.deviceId,
-      JSON.stringify({
-        extent: 6,
-        interval: 30000,
-        minterval: 5000,
-        mode: 0,
-        cmd: 0
-      }),
-      {
-        qos: 1,
-      }
-    );
-  } catch (e) {
-    console.log(e);
-  }
-}
-
 export { 
-  handleHardwareMeta, 
   handleHardwareUpdate
 }; 
