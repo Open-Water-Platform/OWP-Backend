@@ -1,17 +1,19 @@
-const { firestoredb } = require("../configs/firebase.config");
-const getUserDevices = (userId, type) => {
+import { firestoredb } from '../configs/firebase.config';
+import { Device } from '../types';
+
+const getUserDevices = (userId: string, type: string): Promise<Device[]> => {
   return new Promise((resolve, reject) => {
     firestoredb()
-      .collection("devices")
-      .where("device_enabled", "==", true)
-      .where("type", "==", type)
-      .where("userId", "array-contains", userId)
+      .collection('devices')
+      .where('device_enabled', '==', true)
+      .where('type', '==', type)
+      .where('userId', 'array-contains', userId)
       .get()
       .then((data) => {
         if (data.empty) {
-          reject("not user");
+          reject('not user');
         } else {
-          let devices = [];
+          const devices: Device[] = [];
           data.docs.forEach((d) => {
             devices.push({ docId: d.id, ...d.data() });
           });
@@ -22,22 +24,23 @@ const getUserDevices = (userId, type) => {
       })
       .catch((err) => {
         console.log(err);
-        reject();
+        reject(err);
       });
   });
 };
-const getAllDevices = (type) => {
+
+const getAllDevices = (type: string): Promise<Device[]> => {
   return new Promise((resolve, reject) => {
     firestoredb()
-      .collection("devices")
-      .where("device_enabled", "==", true)
-      .where("type", "==", type)
+      .collection('devices')
+      .where('device_enabled', '==', true)
+      .where('type', '==', type)
       .get()
       .then((data) => {
         if (data.empty) {
-          reject("");
+          reject('');
         } else {
-          let devices = [];
+          const devices: Device[] = [];
           data.docs.forEach((d) => {
             devices.push({ docId: d.id, ...d.data() });
           });
@@ -48,13 +51,9 @@ const getAllDevices = (type) => {
       })
       .catch((err) => {
         console.log(err);
-        reject();
+        reject(err);
       });
   });
 };
 
-
-
-
-module.exports.getAllDevices = getAllDevices;
-module.exports.getUserDevices = getUserDevices;
+export { getAllDevices, getUserDevices }; 

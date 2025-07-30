@@ -1,27 +1,28 @@
-const { service } = require('../configs/db.config'); // Adjust the path as needed
+import { service } from '../configs/db.config';
+import { DeviceData, CloudantResponse, GeneralData, ProcessedData } from '../types';
 
 /**
  * Fetches data by device ID returns data after processing history
  * @param id device id
  * @param limit limit number of response objects
  * @param dbName database name
- * @return {Promise} Promise -
+ * @return {Promise<DeviceData>} Promise -
  *  resolve(): result object containing result of device data.
  *  reject():  Error object from the underlying data store.
  */
 
-function getFormattedDate(timestampMilliseconds) {
+function getFormattedDate(timestampMilliseconds: number): string {
   const dateObject = new Date(timestampMilliseconds);
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
   return dateObject.toLocaleDateString(undefined, options);
 }
 
-function getFormattedTime(timestampMilliseconds) {
+function getFormattedTime(timestampMilliseconds: number): string {
   const dateObject = new Date(timestampMilliseconds);
   return dateObject.toLocaleTimeString([], { hour12: true, hour: '2-digit', minute: '2-digit' });
 }
 
-function fetchById(id, limit, dbName) {
+function fetchById(id: number, limit: number, dbName: string): Promise<DeviceData> {
   return new Promise((resolve, reject) => {
     const selector = {
       deviceId: `${id}`,
@@ -33,11 +34,11 @@ function fetchById(id, limit, dbName) {
       selector: selector,
       sort: [{ timestamp: 'desc' }],
       limit: limit
-    }).then(response => {
+    }).then((response: CloudantResponse) => {
       if (response.result.docs.length > 0) {
         const docData = response.result.docs;
 
-        const newData = docData.map(d => {
+        const newData: DeviceData[] = docData.map((d: any) => {
           const salinity = Number(((d.tds / 0.722 / 1000) * 1.09 * 0.47).toFixed(2));
           const ec = Number((d.tds / 0.5).toFixed(2));
           const resistivity = Number((1 / (d.tds / 0.722)).toFixed(4));
@@ -58,16 +59,35 @@ function fetchById(id, limit, dbName) {
 
         const latest = newData[0];
         const history = newData;
-        const data = { ...latest, history: history };
+        const data: DeviceData = { ...latest, history: history };
         resolve(data);
         console.log(data);
       } else {
         reject(new Error('No documents found'));
       }
-    }).catch(err => {
+    }).catch((err: Error) => {
       reject(err);
     });
   });
 }
 
-module.exports.fetchById = fetchById;
+/**
+ * Creates a regular device reading in the database
+ * @param data - Device data to store
+ * @param dbName - Database name
+ * @returns Promise that resolves when data is stored
+ */
+function createRegular(data: ProcessedData, dbName: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    service.postDocument({
+      db: dbName,
+      document: data
+    }).then((response) => {
+      resolve(response);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+}
+
+export { fetchById, createRegular }; 
